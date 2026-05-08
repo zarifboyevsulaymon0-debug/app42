@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Mini Paint</title>
+    <style>
+        :root {
+            --bg: #2c3e50;
+            --panel: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .toolbar {
+            background: var(--panel);
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .tool-group { display: flex; align-items: center; gap: 8px; }
+
+        canvas {
+            background: white;
+            cursor: crosshair;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .clear-btn { background: #e74c3c; color: white; }
+        .save-btn { background: #27ae60; color: white; }
+        button:hover { opacity: 0.8; }
+
+        label { font-size: 14px; font-weight: bold; color: #34495e; }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <div class="tool-group">
+        <label>Rang:</label>
+        <input type="color" id="colorPicker" value="#000000">
+    </div>
+    
+    <div class="tool-group">
+        <label>Qalinlik:</label>
+        <input type="range" id="lineWidth" min="1" max="50" value="5">
+    </div>
+
+    <button class="clear-btn" onclick="clearCanvas()">Tozalash</button>
+    <button class="save-btn" onclick="saveImage()">Yuklab olish</button>
+</div>
+
+<canvas id="paintCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('paintCanvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    const lineWidth = document.getElementById('lineWidth');
+
+    // Canvas o'lchamini oynaga moslash
+    canvas.width = window.innerWidth - 40;
+    canvas.height = window.innerHeight - 120;
+
+    let painting = false;
+
+    function startPosition(e) {
+        painting = true;
+        draw(e);
+    }
+
+    function finishedPosition() {
+        painting = false;
+        ctx.beginPath(); // Har safar yangi chiziq boshlash uchun
+    }
+
+    function draw(e) {
+        if (!painting) return;
+
+        ctx.lineWidth = lineWidth.value;
+        ctx.lineCap = 'round'; // Chiziq uchi yumaloq bo'lishi uchun
+        ctx.strokeStyle = colorPicker.value;
+
+        // Sichqoncha koordinatalarini olish
+        const x = e.clientX - canvas.offsetLeft;
+        const y = e.clientY - canvas.offsetTop;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+
+    // Hodisalarni tinglash
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', finishedPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    // Tozalash funksiyasi
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Rasmni saqlash
+    function saveImage() {
+        const link = document.createElement('a');
+        link.download = 'mening-rasmim.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+</script>
+
+</body>
+</html>
